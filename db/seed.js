@@ -1,120 +1,80 @@
 const { test } = require('picomatch')
-const { client, getAllUsers, createUser } = require('./index')
-​
-// this function should call a query which drops all tables from our database
+const {
+  client,
+  getAllUsers,
+  createUser
+} = require('./index');
+
 async function dropTables() {
   try {
+    console.log("Starting to drop tables...");
+
     await client.query(`
-        DROP TABLE IF EXISTS users;
-      `)
-​
-    console.log('Dropped users table')
+      DROP TABLE IF EXISTS users;
+    `);
+
+    console.log("Finished dropping tables!");
   } catch (error) {
-    throw error // we pass the error up to the function that calls dropTables
+    console.error("Error dropping tables!");
+    throw error;
   }
 }
-​
-// this function should call a query which creates all tables for our database
+
 async function createTables() {
   try {
+    console.log("Starting to build tables...");
+
     await client.query(`
-        CREATE TABLE users (
-            id SERIAL PRIMARY KEY,
-            username varchar(255) UNIQUE NOT NULL,
-            password varchar(255) NOT NULL
-        );
-      `)
-​
-    console.log('Created users table')
+      CREATE TABLE users (
+        id SERIAL PRIMARY KEY,
+        username varchar(255) UNIQUE NOT NULL,
+        password varchar(255) NOT NULL
+      );
+    `);
+
+    console.log("Finished building tables!");
   } catch (error) {
-    throw error 
-    // we pass the error up to the function 
-    // that calls createTables
+    console.error("Error building tables!");
+    throw error;
   }
 }
-​
-async function insertUsers() {
+// new function, should attempt to create a few users
+async function createInitialUsers() {
   try {
-    let user1 = { 
-      username: 'albert', 
-      password: 'bertie99', 
-      name: 'Albert Bert', 
-      location: 'Bert Island',
-      active: true 
-    }
-    let user2 = { 
-      username: 'sandra', 
-      password: '2sandy4me', 
-      name: 'Sandra Sandy', 
-      location: 'Sand Island',
-      active: true 
-    }
-    let user3 = { 
-      username: 'glamgal', 
-      password: 'soglam', 
-      name: 'Sogla Gogla', 
-      location: 'SoglaGogilian',
-      active: true 
-    }
-​
-    const result1 = await createUser(user1)
-    // console.log('User 1 result: ', result1)
-    await createUser(user2)
-    await createUser(user3)
-​
-    console.log('Inserted users...')
-  } catch (error) {
-    console.error('Error creating initial users', error)
+    console.log("Starting to create users...");
+
+    const albert = await createUser({ username: 'albert', password: 'bertie99' });
+    const sandra = await createUser({ username: 'sandra', password: '2sandy4me'});
+    const glamgal = await createUser({ username: 'glamgal', password: 'bertie99'})
+
+    console.log("Finished creating users!");
+  } catch(error) {
+    console.error("Error creating users!");
+    throw error;
   }
 }
-​
+
 async function rebuildDB() {
-  await dropTables()
-  await createTables()
-  await insertUsers()
-}
-​async function updateUser(id, fields = {}) {
-  // build the set string
-  const setString = Object.keys(fields).map(
-    (key, index) => `"${ key }"=$${ index + 1 }`
-  ).join(', ');
-
-  // return early if this is called without fields
-  if (setString.length === 0) {
-    return;
-  }
-
   try {
-    const result = await client.query(`
-      UPDATE users
-      SET ${ setString }
-      WHERE id=${ id }
-      RETURNING *;
-    `, Object.values(fields));
-
-    return result;
+    client.connect();
+    await dropTables();
+    await createTables();
+    await createInitialUsers();
   } catch (error) {
     throw error;
   }
 }
-// rebuildDB()
-​
+
 async function testDB() {
-  const rows = await getAllUsers()
-  //   let { rows } = result  OR result.rows
-  console.log('rows', rows)
+    const users = await getAllUsers();
+    console.log('users', users);
 }
-​
-async function run() {
-  try {
-    client.connect()
-    await rebuildDB()
-    await testDB()
-  } catch (error) {
-    console.error(error)
-  } finally {
-    client.end()
-  }
-}
-​ 
-run()
+
+
+
+rebuildDB()
+  .then(testDB)
+  .catch(console.error)
+  .finally(() => client.end());
+
+  
