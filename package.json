@@ -14,5 +14,13 @@
   "devDependencies": {
     "nodemon": "^2.0.12"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/spizarro3/juicebox.git"
+  },
+  "bugs": {
+    "url": "https://github.com/spizarro3/juicebox/issues"
+  },
+  "homepage": "https://github.com/spizarro3/juicebox#readme",
   "description": ""
 }
