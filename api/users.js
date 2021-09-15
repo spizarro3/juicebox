@@ -13,7 +13,8 @@ usersRouter.get('/', async (req, res) => {
     let users = await getAllUsers()
 
   res.send({
-    users
+    message: 'hello from /users!', 
+    users 
   });
 });
 

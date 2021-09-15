@@ -2,6 +2,8 @@
 const express = require('express')
 const apiRouter = express.Router()
 const userRouter = require('./users')
+const postsRouter = require('./posts')
+const tagsRouter = require('./tags')
 
 const jwt = require('jsonwebtoken')
 const { getUserById } = require('../db')
@@ -46,7 +48,7 @@ apiRouter.use((req, res, next) => {
 })
 
 apiRouter.use('/users', userRouter)
-// apiRouter.use('/posts', postsRouter)
-// apiRouter.use('/tags', tagsRouter)
+apiRouter.use('/posts', postsRouter)
+apiRouter.use('/tags', tagsRouter)
 
 module.exports = apiRouter
